@@ -1,0 +1,138 @@
+import pandas as pd
+import numpy as np
+from pathlib import Path
+import json
+from datetime import datetime
+
+from data.data_processor import InsuranceDataProcessor
+from features.statistical_analysis import StatisticalAnalyzer
+from models.premium_predictor import PremiumPredictor
+from visualization.visualizer import InsuranceVisualizer
+
+def main():
+    # Create output directories
+    output_dir = Path('output')
+    output_dir.mkdir(exist_ok=True)
+    
+    # Initialize data processor
+    data_processor = InsuranceDataProcessor('data/insurance_data.csv')
+    
+    # Load and preprocess data
+    print("Loading and preprocessing data...")
+    data = data_processor.load_data()
+    processed_data = data_processor.preprocess_data()
+    processed_data = data_processor.calculate_risk_metrics(processed_data)
+    
+    # Initialize statistical analyzer
+    print("Performing statistical analysis...")
+    analyzer = StatisticalAnalyzer(processed_data)
+    
+    # Perform hypothesis tests
+    test_results = {
+        'provincial_risk': analyzer.test_provincial_risk_differences(),
+        'zipcode_risk': analyzer.test_zipcode_risk_differences(),
+        'zipcode_profit': analyzer.test_zipcode_profit_differences(),
+        'gender_risk': analyzer.test_gender_risk_differences()
+    }
+    
+    # Save test results
+    with open(output_dir / 'hypothesis_test_results.json', 'w') as f:
+        json.dump(test_results, f, indent=4)
+    
+    # Fit zipcode regression models
+    print("Fitting zipcode regression models...")
+    zipcode_models = analyzer.fit_zipcode_regression_models()
+    
+    # Save zipcode model results
+    with open(output_dir / 'zipcode_model_results.json', 'w') as f:
+        json.dump(zipcode_models, f, indent=4)
+    
+    # Initialize premium predictor
+    print("Training premium prediction model...")
+    predictor = PremiumPredictor()
+    X, y = predictor.prepare_features(processed_data)
+    predictor.train_model(X, y)
+    
+    # Evaluate model
+    model_metrics = predictor.evaluate_model(X, y)
+    
+    # Save model metrics
+    with open(output_dir / 'model_metrics.json', 'w') as f:
+        json.dump(model_metrics, f, indent=4)
+    
+    # Get feature importance
+    feature_importance = predictor.get_feature_importance()
+    feature_importance.to_csv(output_dir / 'feature_importance.csv', index=False)
+    
+    # Initialize visualizer
+    print("Creating visualizations...")
+    visualizer = InsuranceVisualizer(processed_data)
+    
+    # Create visualizations
+    visualizer.plot_risk_distribution(output_dir / 'risk_distribution.png')
+    visualizer.plot_provincial_risk_comparison(output_dir / 'provincial_risk.png')
+    visualizer.plot_gender_risk_comparison(output_dir / 'gender_risk.png')
+    visualizer.plot_premium_vs_claims(output_dir / 'premium_vs_claims.png')
+    visualizer.plot_feature_importance(feature_importance, save_path=output_dir / 'feature_importance.png')
+    visualizer.create_risk_heatmap(output_dir / 'risk_heatmap.png')
+    visualizer.plot_zipcode_risk_map(output_dir / 'zipcode_risk_map.html')
+    visualizer.plot_time_series_analysis(output_dir / 'time_series.png')
+    
+    # Generate summary report
+    print("Generating summary report...")
+    generate_summary_report(test_results, model_metrics, output_dir / 'summary_report.txt')
+    
+    print("Analysis complete! Results saved in the 'output' directory.")
+
+def generate_summary_report(test_results: dict, model_metrics: dict, output_path: Path):
+    """
+    Generate a summary report of the analysis results.
+    
+    Args:
+        test_results (dict): Results of hypothesis tests
+        model_metrics (dict): Model evaluation metrics
+        output_path (Path): Path to save the report
+    """
+    with open(output_path, 'w') as f:
+        f.write("ACIS Insurance Analytics Summary Report\n")
+        f.write("=" * 50 + "\n\n")
+        f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        
+        f.write("Hypothesis Test Results\n")
+        f.write("-" * 30 + "\n")
+        for test_name, results in test_results.items():
+            f.write(f"\n{test_name.replace('_', ' ').title()}:\n")
+            f.write(f"  p-value: {results['p_value']:.4f}\n")
+            f.write(f"  Significant: {results['significant']}\n")
+        
+        f.write("\nPremium Prediction Model Metrics\n")
+        f.write("-" * 30 + "\n")
+        for metric_name, value in model_metrics.items():
+            f.write(f"{metric_name}: {value:.4f}\n")
+        
+        f.write("\nKey Findings and Recommendations\n")
+        f.write("-" * 30 + "\n")
+        f.write("1. Risk Analysis:\n")
+        if test_results['provincial_risk']['significant']:
+            f.write("   - Significant risk differences exist across provinces\n")
+        if test_results['zipcode_risk']['significant']:
+            f.write("   - Significant risk differences exist between zipcodes\n")
+        if test_results['gender_risk']['significant']:
+            f.write("   - Significant risk differences exist between genders\n")
+        
+        f.write("\n2. Profitability Analysis:\n")
+        if test_results['zipcode_profit']['significant']:
+            f.write("   - Significant profit margin differences exist between zipcodes\n")
+        
+        f.write("\n3. Model Performance:\n")
+        f.write(f"   - R-squared score: {model_metrics['r2_score']:.4f}\n")
+        f.write(f"   - RMSE: {model_metrics['rmse']:.4f}\n")
+        
+        f.write("\nRecommendations:\n")
+        f.write("1. Consider adjusting premiums based on provincial risk differences\n")
+        f.write("2. Implement targeted marketing strategies for low-risk zipcodes\n")
+        f.write("3. Review gender-based pricing policies if significant differences exist\n")
+        f.write("4. Use the premium prediction model to optimize pricing strategies\n")
+
+if __name__ == "__main__":
+    main() 
