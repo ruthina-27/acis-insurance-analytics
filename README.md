@@ -1,42 +1,46 @@
-# ACIS Insurance Analytics Project
+# ACIS Insurance Analytics
 
-This repository contains two tasks for the ACIS Insurance Analytics project:
+## Project Overview
+This project analyzes insurance data to uncover patterns in risk and profitability, focusing on exploratory data analysis (EDA), statistical insights, and actionable recommendations for the business.
 
-## Task 1: EDA and Statistical Analysis
-Located in the `task-1` directory, this task includes:
-- Exploratory Data Analysis (EDA)
-- Statistical Analysis
-- Data Visualization
-- CI/CD Pipeline Setup
-- Unit Tests
-
-## Task 2: Data Version Control
-Located in the `task-2` directory, this task focuses on:
-- Setting up DVC for data versioning
-- Creating reproducible data pipelines
-- Establishing data audit trails
-
-## Setup
-
-Each task has its own setup instructions in its respective README.md file:
-- [Task 1 Setup](task-1/README.md)
-- [Task 2 Setup](task-2/README.md)
-
-## Project Structure
-
+## Directory Structure
 ```
 acis-insurance-analytics/
-├── task-1/             # EDA and Statistical Analysis
-│   ├── src/           # Source code
-│   ├── tests/         # Unit tests
-│   ├── notebooks/     # Jupyter notebooks
-│   ├── reports/       # Analysis outputs
-│   └── .github/       # CI/CD configuration
-│
-├── task-2/            # Data Version Control
-│   ├── data/         # DVC-tracked data
-│   ├── src/          # DVC pipeline code
-│   └── tests/        # DVC tests
-│
-└── venv/              # Virtual environment
-``` 
+├── data/                # Raw and processed data
+├── notebooks/           # Jupyter notebooks for EDA and analysis
+├── src/                 # Source code (analysis, models, visualizations)
+├── .github/workflows/   # CI/CD workflows
+├── venv/                # Python virtual environment
+```
+
+## Setup Instructions
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd acis-insurance-analytics
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the EDA notebook:
+   - Open `notebooks/01_eda.ipynb` in Jupyter and run all cells.
+
+## CI/CD
+- GitHub Actions is set up to run linting and tests on every push and pull request to `main`.
+
+## Contribution Guidelines
+- Use feature branches (e.g., `task-1`, `eda-improvements`).
+- Commit frequently with descriptive messages.
+- Ensure code passes linting and tests before opening a pull request.
+
+## Authors
+- [Your Name]
+
+## License
+- MIT License (or specify your license) 
